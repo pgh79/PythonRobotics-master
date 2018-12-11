@@ -1,21 +1,22 @@
 """
-
-Voronoi Road Map Planner
-
-author: Atsushi Sakai (@Atsushi_twi)
-
+函数功能：读取地图，设置起点坐标和终点坐标，规划出一条全局路径
+函数输入：地图，起点终点
+函数输出：一条waypoint
 """
 
-import math
 import numpy as np
-import scipy.spatial
+import random
 import matplotlib.pyplot as plt
+import scipy.spatial
+# import matplotlib.image as mpimg
+import cv2
+import math
 
-# parameter
-N_KNN = 10  # number of edge from one sampled point
+N_SAMPLE = 1000  # number of sample_points
+N_KNN = 20  # number of edge from one sampled point
 MAX_EDGE_LEN = 30.0  # [m] Maximum edge length
 
-show_animation = True
+show_animation = False
 
 
 class Node:
@@ -73,7 +74,7 @@ class KDTree:
         return index
 
 
-def VRM_planning(sx, sy, gx, gy, ox, oy, rr):
+def PRM_planning(sx, sy, gx, gy, ox, oy, rr):
     obkdtree = KDTree(np.vstack((ox, oy)).T)
 
     sample_x, sample_y = sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree)
@@ -237,12 +238,22 @@ def plot_road_map(road_map, sample_x, sample_y):
 
 
 def sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree):
-    oxy = np.vstack((ox, oy)).T  # vstack()是将数组或元组等垂直的堆叠起来的函数。后面的.T是转置的意思
+    maxx = max(ox)
+    maxy = max(oy)
+    minx = min(ox)
+    miny = min(oy)
 
-    # generate voronoi point
-    vor = scipy.spatial.Voronoi(oxy)  # 生成泰森多边形，即oxy中任意相邻的三个点组成的三角形的外心（三边中垂线的交点）组成的多边形
-    sample_x = [ix for [ix, iy] in vor.vertices]
-    sample_y = [iy for [ix, iy] in vor.vertices]
+    sample_x, sample_y = [], []
+
+    while len(sample_x) <= N_SAMPLE:
+        tx = (random.random() - minx) * (maxx - minx)
+        ty = (random.random() - miny) * (maxy - miny)
+
+        index, dist = obkdtree.search(np.matrix([tx, ty]).T)
+
+        if dist[0] >= rr:
+            sample_x.append(tx)
+            sample_y.append(ty)
 
     sample_x.append(sx)
     sample_y.append(sy)
@@ -252,53 +263,64 @@ def sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree):
     return sample_x, sample_y
 
 
-def main():
-    print(__file__ + " start!!")
+# 将 RGB 转为灰度图
+def rgb2gray(rgb):
+    return np.dot(rgb[..., :3], [0.299, 0.587, 0.114])
 
-    # start and goal position
-    sx = 10.0  # [m]
-    sy = 10.0  # [m]
-    gx = 50.0  # [m]
-    gy = 50.0  # [m]
-    robot_size = 5.0  # [m]
 
-    ox = []
-    oy = []
-
-    for i in range(60):
-        ox.append(i)
-        oy.append(0.0)
-    for i in range(60):
-        ox.append(60.0)
-        oy.append(i)
-    for i in range(61):
-        ox.append(i)
-        oy.append(60.0)
-    for i in range(61):
-        ox.append(0.0)
-        oy.append(i)
-    for i in range(40):
-        ox.append(20.0)
-        oy.append(i)
-    for i in range(40):
-        ox.append(40.0)
-        oy.append(60.0 - i)
-
-    if show_animation:
-        plt.plot(ox, oy, ".k")
-        plt.plot(sx, sy, "^r")
-        plt.plot(gx, gy, "^c")
-        plt.grid(True)
-        plt.axis("equal")
-
-    rx, ry = VRM_planning(sx, sy, gx, gy, ox, oy, robot_size)
-
-    assert len(rx) != 0, 'Cannot found path'
-
-    if show_animation:
-        plt.plot(rx, ry, "-r")
-        plt.show()
+def grey2bin(grey):
+    return np.where(grey > 0.5, 1.0, 0)
 
 
 if __name__ == '__main__':
-    main()
+    im = np.array(plt.imread('2_3_label.png'))
+
+    im_grey = rgb2gray(im)
+
+    im_bin = grey2bin(im_grey)
+
+    im_small = cv2.resize(im_bin, (200, 200))
+    # ,interpolation=cv2.INTER_AREA)
+    im_small = grey2bin(im_small)
+
+    sx = 2.0 * 2  # [m]
+    sy = 29.0 * 2  # [m]
+    gx = 90.0 * 2  # [m]
+    gy = 81.0 * 2  # [m]
+    # grid_size = 1.0  # [m]
+    robot_size = 1.0  # [m]
+    obs = np.where(im_small == 0)
+    ox = obs[1]  # [m]
+    oy = obs[0]  # [m]
+    # oy = oy[::-1]  # 将向量倒序输出
+    # print(oy)
+
+    # plt.imshow(im_small)
+    # plt.plot(sx, sy, "rx")
+    # plt.plot(gx, gy, "bx")
+    rx, ry = PRM_planning(sx, sy, gx, gy, ox, oy, robot_size)
+    rx = [x * 25 for x in rx]
+    ry = [y * 25 for y in ry]
+    # rx = np.array(rx)*25
+    # ry = np.array(ry)*25
+    plt.plot(rx, ry, "-r")
+    x = rx
+    y = ry
+    x[0] = rx[0]
+    x[1] = (rx[0] + rx[1] + rx[2]) / 3
+    for i in range(len(rx)):
+        if i > 1 and i < len(rx) - 2:
+            x[i] = (rx[i - 2] + rx[i - 1] + rx[i] + rx[i + 1] + rx[i + 2]) / 5
+    x[len(rx) - 1:len(rx)] = rx[len(rx) - 1:len(rx)]
+    y[0] = ry[0]
+    y[1] = (ry[0] + ry[1] + ry[2]) / 3
+    for i in range(len(ry)):
+        if i > 1 and i < len(ry) - 2:
+            y[i] = (ry[i - 2] + ry[i - 1] + ry[i] + ry[i + 1] + ry[i + 2]) / 5
+    y[len(rx) - 1:len(rx)] = ry[len(rx) - 1:len(rx)]
+
+    plt.imshow(im_bin)
+
+    plt.plot(x, y, "-b")
+    plt.show()
+    print("process end")

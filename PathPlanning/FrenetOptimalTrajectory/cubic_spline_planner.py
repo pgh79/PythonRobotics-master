@@ -139,7 +139,7 @@ class Spline2D:
         self.sy = Spline(self.s, y)
 
     def __calc_s(self, x, y):
-        dx = np.diff(x)
+        dx = np.diff(x)  # 求解差分矩阵，即后一项和前一项的差，用此来估计倒数
         dy = np.diff(y)
         self.ds = [math.sqrt(idx ** 2 + idy ** 2)
                    for (idx, idy) in zip(dx, dy)]

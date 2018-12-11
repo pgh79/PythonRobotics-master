@@ -8,11 +8,17 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import cv2
 import math
+
+# from Pillow import Image
 # from a_star import *
 
 
 # from pylab import *
+show_animation = False
+
+
 class Node:
 
     def __init__(self, x, y, cost, pind):
@@ -24,6 +30,7 @@ class Node:
     def __str__(self):
         return str(self.x) + "," + str(self.y) + "," + str(self.cost) + "," + str(self.pind)
 
+
 # 将 RGB 转为灰度图
 def rgb2gray(rgb):
     return np.dot(rgb[..., :3], [0.299, 0.587, 0.114])
@@ -31,6 +38,7 @@ def rgb2gray(rgb):
 
 def grey2bin(grey):
     return np.where(grey > 0.5, 1.0, 0)
+
 
 def calc_fianl_path(ngoal, closedset, reso):
     # generate final course
@@ -72,6 +80,11 @@ def a_star_planning(sx, sy, gx, gy, ox, oy, reso, rr):
             openset, key=lambda o: openset[o].cost + calc_heuristic(ngoal, openset[o]))
         current = openset[c_id]
 
+        # show graph
+        if show_animation:
+            plt.plot(current.x * reso, current.y * reso, "xc")
+            if len(closedset.keys()) % 10 == 0:
+                plt.pause(0.001)
         if current.x == ngoal.x and current.y == ngoal.y:
             print("Find goal")
             ngoal.pind = current.pind
@@ -158,7 +171,7 @@ def calc_obstacle_map(ox, oy, reso, vr):
             #  print(x, y)
             for iox, ioy in zip(ox, oy):
                 d = math.sqrt((iox - x) ** 2 + (ioy - y) ** 2)
-                if d <= vr / reso:
+                if d < vr / reso:
                     obmap[ix][iy] = True
                     break
 
@@ -184,30 +197,35 @@ def get_motion_model():
 
 
 if __name__ == '__main__':
-
     im = np.array(plt.imread('2_3_label.png'))
 
     im_grey = rgb2gray(im)
 
     im_bin = grey2bin(im_grey)
 
-    sx = 100.0  # [m]
-    sy = 1480.0  # [m]
-    gx = 4500.0  # [m]
-    gy = 4100.0  # [m]
-    grid_size = 10.0  # [m]
+    # im_small = np.reshape(im_bin, )
+    im_small = cv2.resize(im_bin, (100, 100))
+    # ,interpolation=cv2.INTER_AREA)
+    im_small = grey2bin(im_small)
+
+    sx = 2.0  # [m]
+    sy = 29.0  # [m]
+    gx = 90.0  # [m]
+    gy = 81.0  # [m]
+    grid_size = 1.0  # [m]
     robot_size = 1.0  # [m]
-    obs = np.where(im_bin == 0)
+    obs = np.where(im_small == 0)
     ox = obs[1]  # [m]
     oy = obs[0]  # [m]
-    oy = oy[::-1]  # 将向量倒序输出
+    # oy = oy[::-1]  # 将向量倒序输出
     # print(oy)
 
-    # rx, ry = a_star_planning(sx, sy, gx, gy, ox, oy, grid_size, robot_size)
-
-    plt.imshow(im_bin)
+    plt.imshow(im_small)
     plt.plot(sx, sy, "rx")
     plt.plot(gx, gy, "bx")
+    # rx, ry = a_star_planning(sx, sy, gx, gy, ox, oy, grid_size, robot_size)
+
+    # plt.imshow(im_bin)
 
     # plt.plot(rx, ry, "-r")
     plt.show()

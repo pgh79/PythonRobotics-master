@@ -190,7 +190,7 @@ def main():
         hxDR = np.hstack((hxDR, xDR))
         hxTrue = np.hstack((hxTrue, xTrue))
         hz = np.vstack((hz, z))
-
+        #所有带h的是history的意思
         if show_animation:
             plt.cla()
             plt.plot(hz[:, 0], hz[:, 1], ".g")

@@ -512,7 +512,7 @@ def get_straight_course2(dl):
 
 def get_straight_course3(dl):
     ax = [0.0, -10.0, -20.0, -40.0, -50.0, -60.0, -70.0]
-    ay = [0.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0]
+    ay = [0.0, -10.0, 10.0, 0.0, -10.0, 10.0, 0.0]
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
         ax, ay, ds=dl)
 
@@ -589,7 +589,7 @@ def main2():
     print(__file__ + " start!!")
 
     dl = 1.0  # course tick
-    cx, cy, cyaw, ck = get_straight_course3(dl)
+    cx, cy, cyaw, ck = get_switch_back_course(dl)
 
     sp = calc_speed_profile(cx, cy, cyaw, TARGET_SPEED)
 

@@ -3,6 +3,7 @@
 Voronoi Road Map Planner
 
 author: Atsushi Sakai (@Atsushi_twi)
+泰森多边形方法速度慢，有可能是可行路径选择上的问题
 
 """
 
@@ -10,6 +11,7 @@ import math
 import numpy as np
 import scipy.spatial
 import matplotlib.pyplot as plt
+import cv2
 
 # parameter
 N_KNN = 10  # number of edge from one sampled point
@@ -73,10 +75,10 @@ class KDTree:
         return index
 
 
-def VRM_planning(sx, sy, gx, gy, ox, oy, rr):
+def VRM_planning(sx, sy, gx, gy, ox, oy,cx,cy, rr):
     obkdtree = KDTree(np.vstack((ox, oy)).T)
 
-    sample_x, sample_y = sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree)
+    sample_x, sample_y = sample_points(sx, sy, gx, gy, rr, ox, oy,cx,cy, obkdtree)
     if show_animation:
         plt.plot(sample_x, sample_y, ".b")
 
@@ -236,11 +238,11 @@ def plot_road_map(road_map, sample_x, sample_y):
                      [sample_y[i], sample_y[ind]], "-k")
 
 
-def sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree):
-    oxy = np.vstack((ox, oy)).T  # vstack()是将数组或元组等垂直的堆叠起来的函数。后面的.T是转置的意思
+def sample_points(sx, sy, gx, gy, rr, ox, oy,cx,cy, obkdtree):
+    oxy = np.vstack((cx, cy)).T
 
     # generate voronoi point
-    vor = scipy.spatial.Voronoi(oxy)  # 生成泰森多边形，即oxy中任意相邻的三个点组成的三角形的外心（三边中垂线的交点）组成的多边形
+    vor = scipy.spatial.Voronoi(oxy)
     sample_x = [ix for [ix, iy] in vor.vertices]
     sample_y = [iy for [ix, iy] in vor.vertices]
 
@@ -252,53 +254,49 @@ def sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree):
     return sample_x, sample_y
 
 
-def main():
-    print(__file__ + " start!!")
+# 将 RGB 转为灰度图
+def rgb2gray(rgb):
+    return np.dot(rgb[..., :3], [0.299, 0.587, 0.114])
 
-    # start and goal position
-    sx = 10.0  # [m]
-    sy = 10.0  # [m]
-    gx = 50.0  # [m]
-    gy = 50.0  # [m]
-    robot_size = 5.0  # [m]
 
-    ox = []
-    oy = []
-
-    for i in range(60):
-        ox.append(i)
-        oy.append(0.0)
-    for i in range(60):
-        ox.append(60.0)
-        oy.append(i)
-    for i in range(61):
-        ox.append(i)
-        oy.append(60.0)
-    for i in range(61):
-        ox.append(0.0)
-        oy.append(i)
-    for i in range(40):
-        ox.append(20.0)
-        oy.append(i)
-    for i in range(40):
-        ox.append(40.0)
-        oy.append(60.0 - i)
-
-    if show_animation:
-        plt.plot(ox, oy, ".k")
-        plt.plot(sx, sy, "^r")
-        plt.plot(gx, gy, "^c")
-        plt.grid(True)
-        plt.axis("equal")
-
-    rx, ry = VRM_planning(sx, sy, gx, gy, ox, oy, robot_size)
-
-    assert len(rx) != 0, 'Cannot found path'
-
-    if show_animation:
-        plt.plot(rx, ry, "-r")
-        plt.show()
+def grey2bin(grey):
+    return np.where(grey > 0.5, 1.0, 0)
 
 
 if __name__ == '__main__':
-    main()
+    im = np.array(plt.imread('2_3_label.png'))
+
+    im_grey = rgb2gray(im)
+
+    im_bin = grey2bin(im_grey)
+
+    im_small = cv2.resize(im_bin, (200, 200))
+    # ,interpolation=cv2.INTER_AREA)
+    im_small = grey2bin(im_small)
+
+    sx = 2.0 * 2  # [m]
+    sy = 29.0 * 2  # [m]
+    gx = 90.0 * 2  # [m]
+    gy = 81.0 * 2  # [m]
+    # grid_size = 1.0  # [m]
+    robot_size = 1.0  # [m]
+    obs = np.where(im_small == 0)
+    can_go = np.where(im_small==1)
+    ox = obs[1]  # [m]
+    oy = obs[0]  # [m]
+    cx = can_go[1]
+    cy = can_go[0]
+
+    # oy = oy[::-1]  # 将向量倒序输出
+    # print(oy)
+
+    plt.imshow(im_small)
+    plt.plot(sx, sy, "rx")
+    plt.plot(gx, gy, "bx")
+    rx, ry = VRM_planning(sx, sy, gx, gy, ox, oy, cx, cy, robot_size)
+
+    # plt.imshow(im_bin)
+
+    plt.plot(rx, ry, "-r")
+    plt.show()
+    print("process end")

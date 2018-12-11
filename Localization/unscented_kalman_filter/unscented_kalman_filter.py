@@ -210,7 +210,7 @@ def main():
     xEst = np.matrix(np.zeros((nx, 1)))
     xTrue = np.matrix(np.zeros((nx, 1)))
     PEst = np.eye(nx)
-    xDR = np.matrix(np.zeros((nx, 1)))  # Dead reckoning
+    xDR = np.matrix(np.zeros((nx, 1)))  #
 
     wm, wc, gamma = setup_ukf(nx)
 
@@ -253,3 +253,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    plt.show()
