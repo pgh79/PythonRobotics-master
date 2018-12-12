@@ -200,29 +200,29 @@ def main():
     if show_animation:
         plt.plot(x, y, "-r")
 
-        plt.subplots()
-        plt.plot(time, [math.degrees(i) for i in yaw], "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("Yaw[deg]")
-        plt.grid(True)
-
-        plt.subplots()
-        plt.plot(time, v, "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("Speed[m/s]")
-        plt.grid(True)
-
-        plt.subplots()
-        plt.plot(time, a, "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("accel[m/ss]")
-        plt.grid(True)
-
-        plt.subplots()
-        plt.plot(time, j, "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("jerk[m/sss]")
-        plt.grid(True)
+        # plt.subplots()
+        # plt.plot(time, [math.degrees(i) for i in yaw], "-r")
+        # plt.xlabel("Time[s]")
+        # plt.ylabel("Yaw[deg]")
+        # plt.grid(True)
+        #
+        # plt.subplots()
+        # plt.plot(time, v, "-r")
+        # plt.xlabel("Time[s]")
+        # plt.ylabel("Speed[m/s]")
+        # plt.grid(True)
+        #
+        # plt.subplots()
+        # plt.plot(time, a, "-r")
+        # plt.xlabel("Time[s]")
+        # plt.ylabel("accel[m/ss]")
+        # plt.grid(True)
+        #
+        # plt.subplots()
+        # plt.plot(time, j, "-r")
+        # plt.xlabel("Time[s]")
+        # plt.ylabel("jerk[m/sss]")
+        # plt.grid(True)
 
         plt.show()
 
