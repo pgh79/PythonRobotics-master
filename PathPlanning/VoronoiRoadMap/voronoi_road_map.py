@@ -244,7 +244,7 @@ def sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree):
     sample_x = [ix for [ix, iy] in vor.vertices]
     sample_y = [iy for [ix, iy] in vor.vertices]
 
-    sample_x.append(sx)
+    sample_x.append(sx) # 将起点和终点也添加到搜索点当中
     sample_y.append(sy)
     sample_x.append(gx)
     sample_y.append(gy)
@@ -256,10 +256,10 @@ def main():
     print(__file__ + " start!!")
 
     # start and goal position
-    sx = 10.0  # [m]
-    sy = 10.0  # [m]
-    gx = 50.0  # [m]
-    gy = 50.0  # [m]
+    sx = 24.0  # [m]
+    sy = 45.0  # [m]
+    gx = 54.0  # [m]
+    gy = 54.0  # [m]
     robot_size = 5.0  # [m]
 
     ox = []

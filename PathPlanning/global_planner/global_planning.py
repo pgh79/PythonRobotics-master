@@ -472,7 +472,7 @@ def sample_points(sx, sy, gx, gy, rr, ox, oy, obkdtree):
 
         index, dist = obkdtree.search(np.matrix([tx, ty]).T)
 
-        if dist[0] >= rr:
+        if dist[0] >= 1.5*rr:  # 道路上选取的点距离路边障碍的距离大于等于一辆车的大小，可以改成两辆或三辆等
             sample_x.append(tx)
             sample_y.append(ty)
 
@@ -623,10 +623,10 @@ if __name__ == '__main__':
     # ,interpolation=cv2.INTER_AREA)
     im_small = grey2bin(im_small)
 
-    sx = 2.0 * 2  # [m]
-    sy = 29.0 * 2  # [m]
-    gx = 90.0 * 2  # [m]
-    gy = 81.0 * 2  # [m]
+    sx = 100/25  # [m]
+    sy = 1450/25  # [m]
+    gx = 4500/25  # [m]
+    gy = 4050/25  # [m]
     # grid_size = 1.0  # [m]
     robot_size = 1.0  # [m]
     obs = np.where(im_small == 0)
@@ -636,8 +636,8 @@ if __name__ == '__main__':
     # print(oy)
 
     # plt.imshow(im_small)
-    # plt.plot(sx, sy, "rx")
-    # plt.plot(gx, gy, "bx")
+    plt.plot(sx*25, sy*25, "rx")
+    plt.plot(gx*25, gy*25, "bx")
     rx, ry = PRM_planning(sx, sy, gx, gy, ox, oy, robot_size)
     rx = [x * 25 for x in rx]
     ry = [y * 25 for y in ry]
@@ -645,24 +645,26 @@ if __name__ == '__main__':
     plt.plot(rx_cubic_spline,ry_cubic_spline,"-m")
     # rx = np.array(rx)*25
     # ry = np.array(ry)*25
+
     # plt.plot(rx, ry, "-r")
-    x = rx
-    y = ry
-    x[0] = rx[0]
-    x[1] = (rx[0] + rx[1] + rx[2]) / 3
-    for i in range(len(rx)):
-        if i > 1 and i < len(rx) - 2:
-            x[i] = (rx[i - 2] + rx[i - 1] + rx[i] + rx[i + 1] + rx[i + 2]) / 5
-    x[len(rx) - 1:len(rx)] = rx[len(rx) - 1:len(rx)]
-    y[0] = ry[0]
-    y[1] = (ry[0] + ry[1] + ry[2]) / 3
-    for i in range(len(ry)):
-        if i > 1 and i < len(ry) - 2:
-            y[i] = (ry[i - 2] + ry[i - 1] + ry[i] + ry[i + 1] + ry[i + 2]) / 5
-    y[len(rx) - 1:len(rx)] = ry[len(rx) - 1:len(rx)]
+
+    # x = rx_cubic_spline
+    # y = ry_cubic_spline
+    # x[0] = rx_cubic_spline[0]
+    # x[1] = (rx_cubic_spline[0] + rx_cubic_spline[1] + rx_cubic_spline[2]) / 3
+    # for i in range(len(rx_cubic_spline)):
+    #     if i > 1 and i < len(rx_cubic_spline) - 2:
+    #         x[i] = (rx_cubic_spline[i - 2] + rx_cubic_spline[i - 1] + rx_cubic_spline[i] + rx_cubic_spline[i + 1] + rx_cubic_spline[i + 2]) / 5
+    # x[len(rx_cubic_spline) - 1:len(rx_cubic_spline)] = rx_cubic_spline[len(rx_cubic_spline) - 1:len(rx_cubic_spline)]
+    # y[0] = ry_cubic_spline[0]
+    # y[1] = (ry_cubic_spline[0] + ry_cubic_spline[1] + ry_cubic_spline[2]) / 3
+    # for i in range(len(ry_cubic_spline)):
+    #     if i > 1 and i < len(ry_cubic_spline) - 2:
+    #         y[i] = (ry_cubic_spline[i - 2] + ry_cubic_spline[i - 1] + ry_cubic_spline[i] + ry_cubic_spline[i + 1] + ry_cubic_spline[i + 2]) / 5
+    # y[len(rx_cubic_spline) - 1:len(rx_cubic_spline)] = ry_cubic_spline[len(rx_cubic_spline) - 1:len(rx_cubic_spline)]
 
     plt.imshow(im_bin)
 
-    # plt.plot(x, y, "-b")
+    # plt.plot(x, y, "--b")
     plt.show()
     print("process end")
