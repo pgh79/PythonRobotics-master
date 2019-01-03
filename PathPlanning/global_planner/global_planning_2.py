@@ -20,6 +20,7 @@ from skimage import morphology,data,color
 # parameter
 N_KNN = 20  # number of edge from one sampled point
 MAX_EDGE_LEN = 30.0  # [m] Maximum edge length
+SIZE_OF_DOWNSAMPLING = 400  # 【m】 The size of downsampling picture map
 
 show_animation = False
 
@@ -446,16 +447,23 @@ def grey2bin(grey):
 
 
 if __name__ == '__main__':
+    # '''
     im = np.array(plt.imread('2_3_label.png'))
 
     im_grey = rgb2gray(im)
 
     im_bin = grey2bin(im_grey)
 
-    im_small = cv2.resize(im_bin, (400, 400))
+    im_small = cv2.resize(im_bin, (SIZE_OF_DOWNSAMPLING, SIZE_OF_DOWNSAMPLING))
 
     im_skeleton = morphology.skeletonize(im_small)
-
+    # '''
+    # 上面的是创建地图的语句，因为地图创建一次就可以了，其余的时候只要读取就可以了，能够节省一点的时间。
+    '''
+    im_bin = np.array(plt.imread('2_3_bin.png'))
+    im_small = np.array(plt.imread('2_3_small.png'))
+    im_skeleton = np.array(plt.imread('2_3_skeleton.png'))
+    '''
     obs = np.where(im_small == 0)
     can_go_all = np.where(im_skeleton == 1)
     ox = obs[1]  # [m]
@@ -465,22 +473,22 @@ if __name__ == '__main__':
     # im_small = cv2.resize(im_bin, (200, 200))
     # ,interpolation=cv2.INTER_AREA)
     # im_small = grey2bin(im_skeleton)
-    '''
+    # '''
     sx = 100/12.5 + random.random()  # [m]
     sy = 1450/12.5 + random.random()  # [m]
     gx = 4500/12.5 + random.random()  # [m]
     gy = 4060/12.5 + random.random()  # [m]
-    '''
-    # 上面四句和下面的随机生成起始点和终点最机选一组注释
     # '''
+    # 上面四句和下面的随机生成起始点和终点最机选一组注释
+    '''
     can_go_all = np.vstack((cx_all, cy_all))
     initial_position = can_go_all[:, random.randint(0, len(cx_all)-1)]
     goal_position = can_go_all[:, random.randint(0, len(cx_all)-1)]
-    sx = initial_position[0] + random.random()  # [m]
-    sy = initial_position[1] + random.random()  # [m]
-    gx = goal_position[0] + random.random()  # [m]
-    gy = goal_position[1] + random.random()  # [m]
-    # '''
+    sx = initial_position[0] + np.random.uniform(-0.1, 0.1)  # [pixel]
+    sy = initial_position[1] + np.random.uniform(-0.1, 0.1)  # [pixel]
+    gx = goal_position[0] + np.random.uniform(-0.1, 0.1)  # [pixel]
+    gy = goal_position[1] + np.random.uniform(-0.1, 0.1)  # [pixel]
+    '''
     # grid_size = 1.0  # [m]
     robot_size = 1.0  # [m]
 
@@ -494,11 +502,11 @@ if __name__ == '__main__':
     # print(oy)
 
     plt.imshow(im_bin)
-    plt.plot(sx*12.5, sy*12.5, "rx")
-    plt.plot(gx*12.5, gy*12.5, "bx")
+    plt.plot(sx*(5000/SIZE_OF_DOWNSAMPLING), sy*(5000/SIZE_OF_DOWNSAMPLING), "rx")
+    plt.plot(gx*(5000/SIZE_OF_DOWNSAMPLING), gy*(5000/SIZE_OF_DOWNSAMPLING), "bx")
     rx, ry = SRM_planning(sx, sy, gx, gy, ox, oy, cx_all, cy_all, robot_size)
-    rx = [x * 12.5 for x in rx]
-    ry = [y * 12.5 for y in ry]
+    rx = [x * (5000/SIZE_OF_DOWNSAMPLING) for x in rx]
+    ry = [y * (5000/SIZE_OF_DOWNSAMPLING) for y in ry]
     # plt.plot(rx, ry, '-r')
     rx_cubic_spline, ry_cubic_spline, ryaw, rk, s = calc_spline_course(rx, ry)
     plt.plot(rx_cubic_spline, ry_cubic_spline, "-m")

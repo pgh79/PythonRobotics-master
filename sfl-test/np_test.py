@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.spatial
 import matplotlib.pylab as plt
+import random
 
 a = np.array([0, 1, 1, 0, 0, 2, 0])
 b = np.array([0, 0, 1, 1, 0, 1, 0])
@@ -15,17 +16,17 @@ b = np.array([0, 0, 1, 1, 0, 1, 0])
 # print(sample_x, sample_y)
 # plt.plot(a,b)
 # plt.plot(sample_x,sample_y,'r.')
-aa = [0,1,2,3,4,5,6]
-print(a)
-print(aa)
-cc=aa*2
-dd=[x*2 for x in aa]
-bb=np.array(aa)*2
-for i in range(len(dd)):
-    dd[i]=aa[i]
-print(bb)
-print(cc)
-print(dd)
+# aa = [0,1,2,3,4,5,6]
+# print(a)
+# print(aa)
+# cc=aa*2
+# dd=[x*2 for x in aa]
+# bb=np.array(aa)*2
+# for i in range(len(dd)):
+#     dd[i]=aa[i]
+# print(bb)
+# print(cc)
+# print(dd)
 # a=np.array([0,1,2,3])
 # b=np.array([5,6,8,9])
 #
@@ -37,3 +38,8 @@ print(dd)
 # plt.plot(a,b)
 # plt.plot(a*5,b*5)
 # plt.plot(a*25,b*25,".b")
+a = np.random.uniform(-0.1,0.1)
+b = random.random()
+
+print(a)
+print(b)

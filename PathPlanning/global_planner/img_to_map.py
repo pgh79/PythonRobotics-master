@@ -1,8 +1,7 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
-
+from skimage import morphology,data,color
 
 # 将 RGB 转为灰度图
 def rgb2gray(rgb):
@@ -49,13 +48,17 @@ if __name__ == '__main__':
 
     # cv2.imwrite("./Road_image_small.png", image_small * 255)
 
-    im_grey_map = np.array(plt.imread('Road_image_small.png'))
+    im_grey_map = rgb2gray(np.array(plt.imread('2_3_label.png')))
     im_bin_map = grey2bin(im_grey_map)
-    im_bin_map_pool = cv2.resize(im_bin_map,(360,160))
+    im_bin_map_pool = cv2.resize(im_bin_map,(400,400))
+    im_skeleton = morphology.skeletonize(im_bin_map_pool)
+    cv2.imwrite("./2_3_small.png", im_bin_map_pool * 255)
+    cv2.imwrite("./2_3_skeleton.png", im_skeleton * 255)
+    cv2.imwrite("./2_3_bin.png", im_bin_map * 255)
 
     # im_small = cv2.resize(im_bin, (200, 200))
     # # ,interpolation=cv2.INTER_AREA)
     # im_small = grey2bin(im_small)
     #image_small
-    plt.imshow(im_bin_map_pool)
+    plt.imshow(im_skeleton)
     plt.show()
